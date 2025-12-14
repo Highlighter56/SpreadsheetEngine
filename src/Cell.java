@@ -4,23 +4,23 @@ import java.util.Map;
 
 public class Cell implements Comparable<Cell>{
 	
-	private Map<Integer, Integer> adress;
+	private int[] adress;
 	private String data;
 
 	// --Constructors--
 	// Default
-	public Cell(Map<Integer, Integer> adress) {
+	public Cell(int x, int y) {
 		setData(null);
-		setAdress(adress);
+		setAdress(x, y);
 	}
-	public Cell(Map<Integer, Integer> adress, String data) {
+	public Cell(int x, int y, String data) {
 		setData(data);
-		setAdress(adress);
+		setAdress(x, y);
 	}
 	
 	
 	// --Getters--
-	public Map<Integer, Integer> getAdress() {
+	public int[] getAdress() {
 		return adress;
 	}
 	public String getData() {
@@ -28,14 +28,15 @@ public class Cell implements Comparable<Cell>{
 	}
 
 	// --Setters--
-	public void setAdress(Map<Integer, Integer> adress) {
-		this.adress = adress;
+	public void setAdress(int x, int y) {
+		int[] temp = {x,y};
+		adress = temp;
 	}
 	public void setData(String data) {		// Need to add checks
-		if (data.length()<=3)
+		if (data==null || data.length()<=5)
 			this.data = data;
 		else {
-			this.data = data.substring(data.length()-3);
+			this.data = data.substring(data.length()-5);
 		}
 	}
 
@@ -47,11 +48,15 @@ public class Cell implements Comparable<Cell>{
 	// --toString--
 	public String toString() {
 		if (data == null)
-			return "   ";
+			return "     ";
 		else if (data.length() == 1)
-			return "  "+data;
+			return "  "+data+"  ";
 		else if (data.length() == 2)
-			return " "+data;
+			return " "+data+"  ";
+		else if (data.length() == 3)
+			return " "+data+" ";
+		else if (data.length() == 4)
+			return data+" ";
 		return data;
 	}
 
