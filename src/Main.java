@@ -209,7 +209,7 @@ public class Main {
 	}
 
 	public static boolean isValidNum(int n) {
-		return (n-1)>-10000 && (n-1)<100000;
+		return (n)>-10000 && (n)<100000;
 	}
 	public static boolean isValidNum(String n) {
 		if(n!=null && !(n.isEmpty()) && !(n.isBlank())) {
