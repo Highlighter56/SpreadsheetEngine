@@ -1,6 +1,5 @@
 package src;
 
-import java.util.Map;
 
 public class Cell implements Comparable<Cell>{
 	
@@ -33,11 +32,12 @@ public class Cell implements Comparable<Cell>{
 		adress = temp;
 	}
 	public void setData(String data) {		// Need to add checks
-		if (data==null || data.length()<=5)
+		if (data==null || data.isEmpty() || data.length()<=5)
 			this.data = data;
 		else {
 			this.data = data.substring(data.length()-5);
 		}
+		System.out.println("cell data after setting: "+this.data);
 	}
 
 	// --compareTo--
