@@ -37,6 +37,11 @@ public class Cell implements Comparable<Cell>{
 		System.out.println("cell data after setting: "+this.data);
 	}
 
+	// toDefault
+	public void toDefault(Cell cell) {
+		cell.setData(null);
+	}
+
 	// --compareTo--
 	public int compareTo(Cell cell) {
 		return this.data.compareTo(data);
