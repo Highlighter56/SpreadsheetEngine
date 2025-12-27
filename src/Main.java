@@ -208,6 +208,16 @@ public class Main {
 				break;
 
 			case "clear":
+				// clear						|----|
+				// clear (1,1)						 |
+				// clear [1]					|----|  Save these for when working on adding 'through' functionality to all methods
+				// clear [a]					|
+				// clear (1,1) through (3,2)	|
+				if(command.length==2) {
+					if(isCord(command[1])) {
+						return clearCord(fc(command[1]));
+					}
+				}
 				break;
 
 			case "function":
@@ -219,6 +229,11 @@ public class Main {
 				break;
 		}
 		return false;
+	}
+
+	public static boolean clearCord(String cord) {
+		cordToCell(cord).toDefault();
+		return true;
 	}
 
 	public static boolean concatCordCord(String main, String cellToAdd) {

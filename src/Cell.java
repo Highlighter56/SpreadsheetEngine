@@ -38,8 +38,8 @@ public class Cell implements Comparable<Cell>{
 	}
 
 	// toDefault
-	public void toDefault(Cell cell) {
-		cell.setData(null);
+	public void toDefault() {
+		setData(null);
 	}
 
 	// --compareTo--
