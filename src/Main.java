@@ -154,19 +154,15 @@ public class Main {
 						} else if(isValidNum(command[3])) {
 							setCordNum(command[1], command[3]);
 							return true;
+						} else if(command[3].length()<=5) {
+							setCordString(command[1], command[3]);
+							return true;
 						}
 				} else
 					error("Set Format");
 				break;
 
 			case "add":
-				// ***Resolve 1-8 cord error
-				// *** int temp = Integer.valueOf(x)-1;
-				// Meaning remove 0
-
-				// *** could add an A-H and 1-8 to show the labels for rows
-
-				// *** Add -h for help functionality
 				break;
 
 			case "sub":
@@ -201,7 +197,10 @@ public class Main {
 		cordToCell(y).setData(cordToCell(x).getData());
 	}
 	public static void setCordNum(String y, String x) {
-		cordToCell(y).setData(x+"");
+		cordToCell(y).setData(x);
+	}
+	public static void setCordString(String y, String s) {
+		cordToCell(y).setData(s);
 	}
 
 	public static void error(String s) {

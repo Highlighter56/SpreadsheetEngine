@@ -34,9 +34,6 @@ public class Cell implements Comparable<Cell>{
 	public void setData(String data) {		// Need to add checks
 		if (data==null || data.isEmpty() || data.length()<=5)
 			this.data = data;
-		else {
-			this.data = data.substring(data.length()-5);
-		}
 		System.out.println("cell data after setting: "+this.data);
 	}
 
