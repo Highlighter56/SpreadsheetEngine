@@ -149,13 +149,13 @@ public class Main {
 				if(command.length==4) {
 					if(isCord(command[1]) && command[2].equals("to"))
 						if(isCord(command[3])) {
-							setCordCord(command[1], command[3]);
+							setCordCord(fc(command[1]), fc(command[3]));
 							return true;
 						} else if(isValidNum(command[3])) {
-							setCordNum(command[1], command[3]);
+							setCordNum(fc(command[1]), command[3]);
 							return true;
 						} else if(command[3].length()<=5) {
-							setCordString(command[1], command[3]);
+							setCordString(fc(command[1]), command[3]);
 							return true;
 						}
 				} else
@@ -168,9 +168,9 @@ public class Main {
 				if(command.length==4) {
 					if(isCord(command[1]) && command[2].equals("and")) {
 						if(isCord(command[3])) {
-							return addCordCord(command[1], command[3]);
+							return addCordCord(fc(command[1]), fc(command[3]));
 						} else if (isValidNum(command[3])) {
-							return addCordNum(command[1], command[3]);
+							return addCordNum(fc(command[1]), command[3]);
 						}
 					}
 				} else
@@ -294,6 +294,18 @@ public class Main {
 			}
 		}
 		return false;
+	}
+
+	// f = format
+	// after checking if a string is a valid cord (ordered pair or cell reference), use this function to make it in the form of ordered pair (becuase the other functions rely on this form)
+	public static String fc(String cord) {
+		if(cord.length()==2) {
+			String temp = "("+(cord.charAt(0)-96)+","+cord.substring(1)+")";
+			return temp;
+		} else if (cord.length()==5)
+			return cord;
+		error("Non-Valid Cord Passed");
+		return "";
 	}
 
 	public static String buildGrid() {
