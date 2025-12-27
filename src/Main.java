@@ -193,6 +193,18 @@ public class Main {
 				break;
 
 			case "concat":
+				// concat (1,1) and (2,1)
+				// concat (1,1) and abc
+				if(command.length==4) {
+					if(isCord(command[1]) && command[2].equals("and")) {
+						if(isCord(command[3])) {
+							return concatCordCord(fc(command[1]), fc(command[3]));
+						} else if (isValidNum(command[3])) {
+							return concatCordStr(fc(command[1]), command[3]);
+						}
+					}
+				} else
+					error("Sub Format");
 				break;
 
 			case "clear":
@@ -206,6 +218,23 @@ public class Main {
 				System.out.println("Unreconigzed Command");
 				break;
 		}
+		return false;
+	}
+
+	public static boolean concatCordCord(String main, String cellToAdd) {
+		if(cordToCell(main).getData().length() + cordToCell(cellToAdd).getData().length() <=5) {
+			cordToCell(main).setData(cordToCell(main).getData()+cordToCell(cellToAdd).getData());
+			return true;
+		}
+		error("Joint length would exceed cell length limit of 5");
+		return false;
+	}
+	public static boolean concatCordStr(String main, String toAdd) {
+		if(cordToCell(main).getData().length() + toAdd.length() <=5) {
+			cordToCell(main).setData(cordToCell(main).getData() + toAdd);
+			return true;
+		}
+		error("Joint length would exceed cell length limit of 5");
 		return false;
 	}
 
