@@ -173,7 +173,6 @@ public class Main {
 						} else if(isValidNum(command[5]) || command[5].length()<=5) {
 							return setThroughStr(fc(command[1]), fc(command[3]), command[5]);
 						}
-
 				} else
 					error("Set Format");
 				break;
@@ -181,6 +180,8 @@ public class Main {
 			case "add":
 				// add (1,1) and (2,1)
 				// add (1,1) and 5
+				// add (1,1) through (5,5) and (6,6)	: through += and
+				// add (1,1) through (5,5) and 5		: through += 5
 				if(command.length==4) {
 					if(isCord(command[1]) && command[2].equals("and")) {
 						if(isCord(command[3])) {
@@ -189,6 +190,19 @@ public class Main {
 							return addCordNum(fc(command[1]), command[3]);
 						}
 					}
+				} else if(command.length==6) {
+					if(
+						isCord(command[1]) && 
+						command[2].equals("through") && 
+						isCord(command[3]) &&
+						doesFormBox(fc(command[1]), fc(command[3])) &&
+						command[4].equals("and")
+					)
+						if(isCord(command[5])) {
+							return addThroughCord(fc(command[1]), fc(command[3]), fc(command[5]));
+						} else if(isValidNum(command[5]) || command[5].length()<=5) {
+							return addThroughNum(fc(command[1]), fc(command[3]), command[5]);
+						}
 				} else
 					error("Add Format");
 				break;
@@ -247,6 +261,26 @@ public class Main {
 		return false;
 	}
 
+	// add (2,2) through (5,5) and (1,1)
+	public static boolean addThroughCord(String tL, String bR, String cell) {
+		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
+			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
+				addCordCord("("+i+","+j+")", cell);
+			}
+		}
+		return true;
+	}
+	// add (1,1) through (5,5) and 5
+	public static boolean addThroughNum(String tL, String bR, String num) {
+		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
+			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
+				addCordNum("("+i+","+j+")", num);
+			}
+		}
+		return true;
+	}
+
+	// set (2,2) through (5,5) to (1,1)
 	public static boolean setThroughCord(String tL, String bR, String cell) {
 		// System.out.println(tL+"\n"+bR);
 		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
@@ -259,13 +293,10 @@ public class Main {
 		}
 		return true;
 	}
+	// set (1,1) through (5,5) to 5
 	public static boolean setThroughStr(String tL, String bR, String num) {
-		// System.out.println(tL+"\n"+bR);
 		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
-			// System.out.println("i: "+i);
 			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
-				// System.out.println("j: "+j);
-				// System.out.println("("+i+","+j+")");
 				setCordNum("("+i+","+j+")", num);
 			}
 		}
