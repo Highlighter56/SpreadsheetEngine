@@ -146,6 +146,8 @@ public class Main {
 			case "set":
 				// set (1,1) to (2,2)
 				// set (1,1) to 5
+				// set (1,1) through (2,2) to (5,5)		|	From top left to bottom right
+				// set (1,1) through (2,2) to 6			|	
 				if(command.length==4) {
 					if(isCord(command[1]) && command[2].equals("to"))
 						if(isCord(command[3])) {
@@ -158,6 +160,20 @@ public class Main {
 							setCordString(fc(command[1]), command[3]);
 							return true;
 						}
+				} else if(command.length==6) {
+					if(
+						isCord(command[1]) && 
+						command[2].equals("through") && 
+						isCord(command[3]) &&
+						doesFormBox(fc(command[1]), fc(command[3])) &&
+						command[4].equals("to")
+					)
+						if(isCord(command[5])) {
+							return setThroughCord(fc(command[1]), fc(command[3]), fc(command[5]));
+						} else if(isValidNum(command[5]) || command[5].length()<=5) {
+							return setThroughStr(fc(command[1]), fc(command[3]), command[5]);
+						}
+
 				} else
 					error("Set Format");
 				break;
@@ -231,11 +247,45 @@ public class Main {
 		return false;
 	}
 
+	public static boolean setThroughCord(String tL, String bR, String cell) {
+		// System.out.println(tL+"\n"+bR);
+		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
+			// System.out.println("i: "+i);
+			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
+				// System.out.println("j: "+j);
+				// System.out.println("("+i+","+j+")");
+				setCordCord("("+i+","+j+")", cell);
+			}
+		}
+		return true;
+	}
+	public static boolean setThroughStr(String tL, String bR, String num) {
+		// System.out.println(tL+"\n"+bR);
+		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
+			// System.out.println("i: "+i);
+			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
+				// System.out.println("j: "+j);
+				// System.out.println("("+i+","+j+")");
+				setCordNum("("+i+","+j+")", num);
+			}
+		}
+		return true;
+	}
+
+	// tL = Top Left
+	// bR = Bottom Right
+	// tL and bR should be entered as (1,1) in a string, meaing somethign like fc(command[1])
+	public static boolean doesFormBox(String tL, String bR) {
+		return tL.charAt(1)<=bR.charAt(1) && tL.charAt(3)<=bR.charAt(3);
+	}
+
+	// clear (1,1)
 	public static boolean clearCord(String cord) {
 		cordToCell(cord).toDefault();
 		return true;
 	}
 
+	// concat (1,1) and (2,2)
 	public static boolean concatCordCord(String main, String cellToAdd) {
 		if(cordToCell(main).getData().length() + cordToCell(cellToAdd).getData().length() <=5) {
 			cordToCell(main).setData(cordToCell(main).getData()+cordToCell(cellToAdd).getData());
@@ -244,6 +294,7 @@ public class Main {
 		error("Joint length would exceed cell length limit of 5");
 		return false;
 	}
+	// concat (1,1) and bcd
 	public static boolean concatCordStr(String main, String toAdd) {
 		if(cordToCell(main).getData().length() + toAdd.length() <=5) {
 			cordToCell(main).setData(cordToCell(main).getData() + toAdd);
@@ -253,6 +304,7 @@ public class Main {
 		return false;
 	}
 
+	// sub (1,1) and (2,2) : (1,1) - (2,2)
 	public static boolean subCordCord(String main, String toAdd) {
 		if(isValidNum(cordToCell(main).getData()) && isValidNum(cordToCell(toAdd).getData())) {
 			if(isValidNum(Integer.valueOf(cordToCell(main).getData()) - Integer.valueOf(cordToCell(toAdd).getData()))) {
@@ -266,6 +318,7 @@ public class Main {
 		}
 		return false;
 	}
+	// sub (1,1) and 5
 	public static boolean subCordNum(String main, String toAdd) {
 		if(isValidNum(cordToCell(main).getData()) && isValidNum(toAdd)) {
 			if(isValidNum(Integer.valueOf(cordToCell(main).getData()) - Integer.valueOf(toAdd))) {
@@ -280,6 +333,7 @@ public class Main {
 		return false;
 	}
 
+	// add (1,1) and (2,2)
 	public static boolean addCordCord(String main, String toAdd) {
 		if(isValidNum(cordToCell(main).getData()) && isValidNum(cordToCell(toAdd).getData())) {
 			if(isValidNum(Integer.valueOf(cordToCell(main).getData()) + Integer.valueOf(cordToCell(toAdd).getData()))) {
@@ -293,6 +347,7 @@ public class Main {
 		}
 		return false;
 	}
+	// add (1,1) and 5
 	public static boolean addCordNum(String main, String toAdd) {
 		if(isValidNum(cordToCell(main).getData()) && isValidNum(toAdd)) {
 			if(isValidNum(Integer.valueOf(cordToCell(main).getData()) + Integer.valueOf(toAdd))) {
@@ -307,27 +362,35 @@ public class Main {
 		return false;
 	}
 
-	public static Cell cordToCell(String s) {
-		return cGrid[Integer.valueOf(s.charAt(1)+"")][Integer.valueOf(s.charAt(3)+"")];
-	}
-
+	// set (1,1) to (2,2)
 	public static void setCordCord(String y, String x) {
 		cordToCell(y).setData(cordToCell(x).getData());
 	}
+	// set (1,1) to 5
 	public static void setCordNum(String y, String x) {
 		cordToCell(y).setData(x);
 	}
+	// set (1,1) to "abcde"
 	public static void setCordString(String y, String s) {
 		cordToCell(y).setData(s);
 	}
 
+	// (1,1) -> CELL
+	public static Cell cordToCell(String s) {
+		return cGrid[Integer.valueOf(s.charAt(1)+"")][Integer.valueOf(s.charAt(3)+"")];
+	}
+
+	// Print out command Line Error
 	public static void error(String s) {
 		System.out.println(s+" Error");
 	}
 
+	// checks if the num the number could be stored in a cell
+	// length is less than 5
 	public static boolean isValidNum(int n) {
 		return (n)>-10000 && (n)<100000;
 	}
+	// checks if n the string is a valid number / could be stored in a cell
 	public static boolean isValidNum(String n) {
 		if(n!=null && !(n.isEmpty()) && !(n.isBlank())) {
 			try {
@@ -340,10 +403,13 @@ public class Main {
 		return false;
 	}
 
+	// returns if the string could be a cordinate
+	// 	Option 1: (1,1)
+	// 	Option 2: A1
 	public static boolean isCord(String cord) {
 		return isCellReference(cord) || isOrderedPair(cord);
 	}
-	// EX: (1,2), (4,6)
+	// Checks if the string is in the form (1,1)
 	public static boolean isOrderedPair(String cord) {
 		if (cord.length()==5) {
 			if (cord.charAt(0)=='(' && cord.charAt(4)==')')
@@ -365,7 +431,7 @@ public class Main {
 		error("Invalid Cordinate Syntax");
 		return false;
 	}
-	// EX: A1, B5
+	// Checks if the String is in the form A1
 	public static boolean isCellReference(String cord) {
 		if(cord.length()==2) {
 			if('a' <= cord.charAt(0) && cord.charAt(1) <= 'h') {
@@ -391,6 +457,7 @@ public class Main {
 		return "";
 	}
 
+	// Outputs a string that can be printed out to show the updated grid
 	public static String buildGrid() {
 		String s = 	"     A     B     C     D     E     F     G     H\n"+
 					"  +-----+-----+-----+-----+-----+-----+-----+-----+\n";
