@@ -210,6 +210,8 @@ public class Main {
 			case "sub":
 				// sub (1,1) and (2,1)
 				// sub (1,1) and 5
+				// sub (1,1) through (5,5) and (6,6)	: through -= and
+				// sub (1,1) through (5,5) and 5		: through -= 5
 				if(command.length==4) {
 					if(isCord(command[1]) && command[2].equals("and")) {
 						if(isCord(command[3])) {
@@ -218,6 +220,19 @@ public class Main {
 							return subCordNum(fc(command[1]), command[3]);
 						}
 					}
+				} else if(command.length==6) {
+					if(
+						isCord(command[1]) && 
+						command[2].equals("through") && 
+						isCord(command[3]) &&
+						doesFormBox(fc(command[1]), fc(command[3])) &&
+						command[4].equals("and")
+					)
+						if(isCord(command[5])) {
+							return subThroughCord(fc(command[1]), fc(command[3]), fc(command[5]));
+						} else if(isValidNum(command[5]) || command[5].length()<=5) {
+							return subThroughNum(fc(command[1]), fc(command[3]), command[5]);
+						}
 				} else
 					error("Sub Format");
 				break;
@@ -259,6 +274,25 @@ public class Main {
 				break;
 		}
 		return false;
+	}
+
+	// sub (2,2) through (5,5) and (1,1)
+	public static boolean subThroughCord(String tL, String bR, String cell) {
+		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
+			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
+				subCordCord("("+i+","+j+")", cell);
+			}
+		}
+		return true;
+	}
+	// sub (1,1) through (5,5) and 5
+	public static boolean subThroughNum(String tL, String bR, String num) {
+		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
+			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
+				subCordNum("("+i+","+j+")", num);
+			}
+		}
+		return true;
 	}
 
 	// add (2,2) through (5,5) and (1,1)
