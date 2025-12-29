@@ -230,7 +230,7 @@ public class Main {
 					)
 						if(isCord(command[5])) {
 							return subThroughCord(fc(command[1]), fc(command[3]), fc(command[5]));
-						} else if(isValidNum(command[5]) || command[5].length()<=5) {
+						} else if(isValidNum(command[5])) {
 							return subThroughNum(fc(command[1]), fc(command[3]), command[5]);
 						}
 				} else
@@ -240,14 +240,25 @@ public class Main {
 			case "concat":
 				// concat (1,1) and (2,1)
 				// concat (1,1) and abc
+				// concat (1,1) through (3,3) and abc
+				// concat (1,1) through (3,3) and (8,8)
 				if(command.length==4) {
 					if(isCord(command[1]) && command[2].equals("and")) {
-						if(isCord(command[3])) {
+						if(isCord(command[3]))
 							return concatCordCord(fc(command[1]), fc(command[3]));
-						} else if (isValidNum(command[3])) {
-							return concatCordStr(fc(command[1]), command[3]);
-						}
+						return concatCordStr(fc(command[1]), command[3]);
 					}
+				} else if(command.length==6) {
+					if(
+						isCord(command[1]) && 
+						command[2].equals("through") && 
+						isCord(command[3]) &&
+						doesFormBox(fc(command[1]), fc(command[3])) &&
+						command[4].equals("and")
+					)
+						if(isCord(command[5]))
+							return concatThroughCord(fc(command[1]), fc(command[3]), fc(command[5]));
+						return concatThroughStr(fc(command[1]), fc(command[3]), command[5]);
 				} else
 					error("Sub Format");
 				break;
@@ -274,6 +285,25 @@ public class Main {
 				break;
 		}
 		return false;
+	}
+
+	// concat (1,1) through (3,3) and h8
+	public static boolean concatThroughCord(String tL, String bR, String cell) {
+		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
+			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
+				concatCordCord("("+i+","+j+")", cell);
+			}
+		}
+		return true;
+	}
+	// concat (1,1) through (3,3) and bcd
+	public static boolean concatThroughStr(String tL, String bR, String s) {
+		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
+			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
+				concatCordStr("("+i+","+j+")", s);
+			}
+		}
+		return true;
 	}
 
 	// sub (2,2) through (5,5) and (1,1)
