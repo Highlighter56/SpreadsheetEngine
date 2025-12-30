@@ -269,9 +269,17 @@ public class Main {
 				// clear [1]					|----|  Save these for when working on adding 'through' functionality to all methods
 				// clear [a]					|
 				// clear (1,1) through (3,2)	|
-				if(command.length==2) {
-					if(isCord(command[1])) {
+				if(command.length==1) {											// clear
+					return clearThrough("(1,1)","(8,8");
+				} else if(command.length==2) {
+					if(isCord(command[1])) {									// clear (1,1)
 						return clearCord(fc(command[1]));
+					} else if(command[1].length()==3 && command[1].charAt(0)=='[' && command[1].charAt(2)==']') {
+						if(Character.isDigit(command[1].charAt(1)) && 1<=command[1].charAt(1)-48 && command[1].charAt(1)-48<=8) {		// clear [1]
+							return clearThrough("(1,"+command[1].charAt(1)+")","(8,"+command[1].charAt(1)+"");
+						} if(Character.isLetter(command[1].charAt(1)) && 1<=command[1].charAt(1)-96 && command[1].charAt(1)-96<=8) {	// clear [a]
+							return clearThrough("("+(command[1].charAt(1)-96)+",1)","("+(command[1].charAt(1)-96)+",8");
+						}
 					}
 				}
 				break;
@@ -285,6 +293,16 @@ public class Main {
 				break;
 		}
 		return false;
+	}
+
+	// concat (1,1) through (3,3) and h8
+	public static boolean clearThrough(String tL, String bR) {
+		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
+			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
+				clearCord("("+i+","+j+")");
+			}
+		}
+		return true;
 	}
 
 	// concat (1,1) through (3,3) and h8
@@ -382,6 +400,10 @@ public class Main {
 
 	// concat (1,1) and (2,2)
 	public static boolean concatCordCord(String main, String cellToAdd) {
+		if(cordToCell(main).getData()==null) {
+			setCordCord(main, cellToAdd);
+			return true;
+		}
 		if(cordToCell(main).getData().length() + cordToCell(cellToAdd).getData().length() <=5) {
 			cordToCell(main).setData(cordToCell(main).getData()+cordToCell(cellToAdd).getData());
 			return true;
@@ -391,7 +413,10 @@ public class Main {
 	}
 	// concat (1,1) and bcd
 	public static boolean concatCordStr(String main, String toAdd) {
-		if(cordToCell(main).getData().length() + toAdd.length() <=5) {
+		if(cordToCell(main).getData()==null) {
+			setCordString(main, toAdd);
+			return true;
+		} else if(cordToCell(main).getData().length() + toAdd.length() <=5) {
 			cordToCell(main).setData(cordToCell(main).getData() + toAdd);
 			return true;
 		}
