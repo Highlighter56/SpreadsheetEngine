@@ -2,11 +2,15 @@ package src;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.SQLException;
 import javax.swing.*;
 import java.awt.*;
 import javax.swing.border.Border;	// Im not sure why this isnt inculded in swing.* 
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
 
 public class Main {
 	static Cell[][] cGrid = new Cell[9][9];
@@ -47,21 +51,40 @@ public class Main {
 	// 				"+-----+-----+-----+-----+-----+-----+-----+-----+\n";
 
 
-	public static void main(String[] args) throws FileNotFoundException, IOException {
+	public static void main(String[] args) throws FileNotFoundException, IOException, SQLException {
 
-		// Create Cell Grid
+		CellDAO dao = new CellDAO();
+		dao.connect();
+
+		// Create Cells for Grid
 		for(int i=0; i<9; i++) {
 			for(int j=0; j<9; j++) {
 				cGrid[i][j] = new Cell(i, j);
 			}
 		}
-		// cGrid[1][1].setData("0");
+
+		// Load stored data into cGrid
+		dao.loadAllCells(cGrid);
 
 		SwingUtilities.invokeLater(() -> {
 
             JFrame frame = new JFrame("Mini Spreadsheet");
             frame.setSize(610, 620);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+			frame.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosing(WindowEvent e) {
+					try {
+						dao.saveDirty(cGrid);
+						dao.close();
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					}
+				}
+			});
+
+
 
             // Display area
             JTextArea display = new JTextArea();
@@ -128,6 +151,14 @@ public class Main {
 				if( !(userInput == null || userInput.isBlank())) {
 					String[] command = userInput.toLowerCase().split(" ");
 					if(runCommand(command)) {
+						// Save Changes to Database
+						try {							// You need the try block because saveDirty throws SQU exception
+							dao.saveDirty(cGrid);
+						} catch (SQLException ex) {
+							ex.printStackTrace();
+							error("Database save failed");
+							return;
+						}
 						// Update Display
 						display.setText(buildGrid() + "> " + userInput);
 					}
@@ -139,6 +170,7 @@ public class Main {
 
 		
 	}
+
 	// returns true on successful function call
 	// returns false otherwise
 	public static boolean runCommand(String[] command) {

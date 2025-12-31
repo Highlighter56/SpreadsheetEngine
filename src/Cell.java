@@ -4,12 +4,13 @@ package src;
 public class Cell implements Comparable<Cell>{
 	
 	private int[] adress;
-	private String data;
+	private String data = "";
+	private boolean isDirty = false;
 
 	// --Constructors--
 	// Default
 	public Cell(int x, int y) {
-		setData(null);
+		setData("");
 		setAdress(x, y);
 	}
 	public Cell(int x, int y, String data) {
@@ -25,6 +26,9 @@ public class Cell implements Comparable<Cell>{
 	public String getData() {
 		return data;
 	}
+	public boolean isDirty() {
+		return isDirty;
+	}
 
 	// --Setters--
 	public void setAdress(int x, int y) {
@@ -32,14 +36,26 @@ public class Cell implements Comparable<Cell>{
 		adress = temp;
 	}
 	public void setData(String data) {		// Need to add checks
-		if (data==null || data.isEmpty() || data.length()<=5)
-			this.data = data;
+		if (data!=null && (data.isEmpty() || data.length()<=5)) {
+			if(!(this.data.equals(data))) {		// if new data is different than old data
+				this.data = data;
+				isDirty=true;
+			}
+		}
 		System.out.println("cell data after setting: "+this.data);
+	}
+	public void setDataFromDB(String data) {
+		this.data = data;
+		this.isDirty = false;
+	}
+
+	public void clean() {
+		isDirty = false;
 	}
 
 	// toDefault
 	public void toDefault() {
-		setData(null);
+		setData("");
 	}
 
 	// --compareTo--
@@ -49,7 +65,7 @@ public class Cell implements Comparable<Cell>{
 	
 	// --toString--
 	public String toString() {
-		if (data == null)
+		if (data==null || data.isEmpty() || data.isBlank())
 			return "     ";
 		else if (data.length() == 1)
 			return "  "+data+"  ";
