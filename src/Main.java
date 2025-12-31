@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import javax.swing.*;
 import java.awt.*;
-import javax.swing.border.Border;	// Im not sure why this isnt inculded in swing.* 
+import javax.swing.border.Border;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
@@ -53,10 +53,11 @@ public class Main {
 
 	public static void main(String[] args) throws FileNotFoundException, IOException, SQLException {
 
+		// Create the MySql connection
 		CellDAO dao = new CellDAO();
 		dao.connect();
 
-		// Create Cells for Grid
+		// Create Cells for cGrid
 		for(int i=0; i<9; i++) {
 			for(int j=0; j<9; j++) {
 				cGrid[i][j] = new Cell(i, j);
@@ -72,6 +73,7 @@ public class Main {
             frame.setSize(610, 620);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+			// On close save dirty/modified cells
 			frame.addWindowListener(new WindowAdapter() {
 				@Override
 				public void windowClosing(WindowEvent e) {
@@ -85,7 +87,6 @@ public class Main {
 			});
 
 
-
             // Display area
             JTextArea display = new JTextArea();
             display.setEditable(false);
@@ -94,11 +95,6 @@ public class Main {
             display.setCaretColor(Color.WHITE);			// Caret color = color of the blinking line that tells you where you are typing
 			display.setMargin(new Insets(10, 10, 10, 10));
             display.setFont(new Font("Monospaced", Font.PLAIN, 18));
-			// Removes Scroll Bar Border	--- TO DO
-			// JScrollPane scrollPane = new JScrollPane(display);
-			// scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        	// scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-			// // add(scrollPane, BorderLayout.CENTER);
 
             // Input field
             JTextField input = new JTextField("Insert Commands Here...");
@@ -147,12 +143,13 @@ public class Main {
 				// Clear input field
                 input.setText("");
 
-				// Parse Commands
+				// ---Parse and Run Commands---
 				if( !(userInput == null || userInput.isBlank())) {
 					String[] command = userInput.toLowerCase().split(" ");
+					// If the command can run, run it then store and display the changes
 					if(runCommand(command)) {
 						// Save Changes to Database
-						try {							// You need the try block because saveDirty throws SQU exception
+						try {
 							dao.saveDirty(cGrid);
 						} catch (SQLException ex) {
 							ex.printStackTrace();
@@ -183,14 +180,9 @@ public class Main {
 				if(command.length==4) {
 					if(isCord(command[1]) && command[2].equals("to"))
 						if(isCord(command[3])) {
-							setCordCord(fc(command[1]), fc(command[3]));
-							return true;
-						} else if(isValidNum(command[3])) {
-							setCordNum(fc(command[1]), command[3]);
-							return true;
-						} else if(command[3].length()<=5) {
-							setCordString(fc(command[1]), command[3]);
-							return true;
+							return setCordCord(fc(command[1]), fc(command[3]));
+						} else if(isValidNum(command[3]) || command[3].length()<=5) {
+							return setCordStr(fc(command[1]), command[3]);
 						}
 				} else if(command.length==6) {
 					if(
@@ -296,20 +288,32 @@ public class Main {
 				break;
 
 			case "clear":
-				// clear						|----|
-				// clear (1,1)						 |
-				// clear [1]					|----|  Save these for when working on adding 'through' functionality to all methods
-				// clear [a]					|
-				// clear (1,1) through (3,2)	|
+				// clear
+				// clear (1,1)
+				// clear [1]
+				// clear [a]
+				// clear (1,1) through (3,2
 				if(command.length==1) {											// clear
 					return clearThrough("(1,1)","(8,8");
 				} else if(command.length==2) {
 					if(isCord(command[1])) {									// clear (1,1)
 						return clearCord(fc(command[1]));
-					} else if(command[1].length()==3 && command[1].charAt(0)=='[' && command[1].charAt(2)==']') {
-						if(Character.isDigit(command[1].charAt(1)) && 1<=command[1].charAt(1)-48 && command[1].charAt(1)-48<=8) {		// clear [1]
+					} else if(
+						command[1].length()==3 && 
+						command[1].charAt(0)=='[' && 
+						command[1].charAt(2)==']'
+					) {
+						if(														// clear [1]
+							Character.isDigit(command[1].charAt(1)) && 
+							1<=command[1].charAt(1)-48 && 
+							command[1].charAt(1)-48<=8
+						) {
 							return clearThrough("(1,"+command[1].charAt(1)+")","(8,"+command[1].charAt(1)+"");
-						} if(Character.isLetter(command[1].charAt(1)) && 1<=command[1].charAt(1)-96 && command[1].charAt(1)-96<=8) {	// clear [a]
+						} if(													// clear [a]
+							Character.isLetter(command[1].charAt(1)) && 
+							1<=command[1].charAt(1)-96 && 
+							command[1].charAt(1)-96<=8
+						) {	
 							return clearThrough("("+(command[1].charAt(1)-96)+",1)","("+(command[1].charAt(1)-96)+",8");
 						}
 					}
@@ -318,6 +322,7 @@ public class Main {
 
 			case "function":
 			case "func":
+				// Future Plans
 				break;
 
 			default:
@@ -327,73 +332,17 @@ public class Main {
 		return false;
 	}
 
-	// concat (1,1) through (3,3) and h8
-	public static boolean clearThrough(String tL, String bR) {
-		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
-			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
-				clearCord("("+i+","+j+")");
-			}
-		}
+	// ---Set---
+	// set (1,1) to (2,2)
+	public static boolean setCordCord(String y, String x) {
+		cordToCell(y).setData(cordToCell(x).getData());
 		return true;
 	}
-
-	// concat (1,1) through (3,3) and h8
-	public static boolean concatThroughCord(String tL, String bR, String cell) {
-		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
-			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
-				concatCordCord("("+i+","+j+")", cell);
-			}
-		}
+	// set (1,1) to 5	|| 	 set (1,1) to "abcde"
+	public static boolean setCordStr(String y, String s) {
+		cordToCell(y).setData(s);
 		return true;
 	}
-	// concat (1,1) through (3,3) and bcd
-	public static boolean concatThroughStr(String tL, String bR, String s) {
-		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
-			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
-				concatCordStr("("+i+","+j+")", s);
-			}
-		}
-		return true;
-	}
-
-	// sub (2,2) through (5,5) and (1,1)
-	public static boolean subThroughCord(String tL, String bR, String cell) {
-		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
-			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
-				subCordCord("("+i+","+j+")", cell);
-			}
-		}
-		return true;
-	}
-	// sub (1,1) through (5,5) and 5
-	public static boolean subThroughNum(String tL, String bR, String num) {
-		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
-			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
-				subCordNum("("+i+","+j+")", num);
-			}
-		}
-		return true;
-	}
-
-	// add (2,2) through (5,5) and (1,1)
-	public static boolean addThroughCord(String tL, String bR, String cell) {
-		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
-			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
-				addCordCord("("+i+","+j+")", cell);
-			}
-		}
-		return true;
-	}
-	// add (1,1) through (5,5) and 5
-	public static boolean addThroughNum(String tL, String bR, String num) {
-		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
-			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
-				addCordNum("("+i+","+j+")", num);
-			}
-		}
-		return true;
-	}
-
 	// set (2,2) through (5,5) to (1,1)
 	public static boolean setThroughCord(String tL, String bR, String cell) {
 		// System.out.println(tL+"\n"+bR);
@@ -411,80 +360,13 @@ public class Main {
 	public static boolean setThroughStr(String tL, String bR, String num) {
 		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
 			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
-				setCordNum("("+i+","+j+")", num);
+				setCordStr("("+i+","+j+")", num);
 			}
 		}
 		return true;
 	}
 
-	// tL = Top Left
-	// bR = Bottom Right
-	// tL and bR should be entered as (1,1) in a string, meaing somethign like fc(command[1])
-	public static boolean doesFormBox(String tL, String bR) {
-		return tL.charAt(1)<=bR.charAt(1) && tL.charAt(3)<=bR.charAt(3);
-	}
-
-	// clear (1,1)
-	public static boolean clearCord(String cord) {
-		cordToCell(cord).toDefault();
-		return true;
-	}
-
-	// concat (1,1) and (2,2)
-	public static boolean concatCordCord(String main, String cellToAdd) {
-		if(cordToCell(main).getData()==null) {
-			setCordCord(main, cellToAdd);
-			return true;
-		}
-		if(cordToCell(main).getData().length() + cordToCell(cellToAdd).getData().length() <=5) {
-			cordToCell(main).setData(cordToCell(main).getData()+cordToCell(cellToAdd).getData());
-			return true;
-		}
-		error("Joint length would exceed cell length limit of 5");
-		return false;
-	}
-	// concat (1,1) and bcd
-	public static boolean concatCordStr(String main, String toAdd) {
-		if(cordToCell(main).getData()==null) {
-			setCordString(main, toAdd);
-			return true;
-		} else if(cordToCell(main).getData().length() + toAdd.length() <=5) {
-			cordToCell(main).setData(cordToCell(main).getData() + toAdd);
-			return true;
-		}
-		error("Joint length would exceed cell length limit of 5");
-		return false;
-	}
-
-	// sub (1,1) and (2,2) : (1,1) - (2,2)
-	public static boolean subCordCord(String main, String toAdd) {
-		if(isValidNum(cordToCell(main).getData()) && isValidNum(cordToCell(toAdd).getData())) {
-			if(isValidNum(Integer.valueOf(cordToCell(main).getData()) - Integer.valueOf(cordToCell(toAdd).getData()))) {
-				cordToCell(main).setData(Integer.valueOf(cordToCell(main).getData()) - Integer.valueOf(cordToCell(toAdd).getData()) + "");
-				return true;
-			} else {
-				error("Difference is too long to be stored in cell");
-			}
-		} else {
-			error("Can only subtract two numbers");
-		}
-		return false;
-	}
-	// sub (1,1) and 5
-	public static boolean subCordNum(String main, String toAdd) {
-		if(isValidNum(cordToCell(main).getData()) && isValidNum(toAdd)) {
-			if(isValidNum(Integer.valueOf(cordToCell(main).getData()) - Integer.valueOf(toAdd))) {
-				cordToCell(main).setData(Integer.valueOf(cordToCell(main).getData()) - Integer.valueOf(toAdd) + "");
-				return true;
-			} else {
-				error("Difference is too long to be stored in cell");
-			}
-		} else {
-			error("Can only subtract two numbers");
-		}
-		return false;
-	}
-
+	// ---Add---
 	// add (1,1) and (2,2)
 	public static boolean addCordCord(String main, String toAdd) {
 		if(isValidNum(cordToCell(main).getData()) && isValidNum(cordToCell(toAdd).getData())) {
@@ -513,23 +395,145 @@ public class Main {
 		}
 		return false;
 	}
+	// add (2,2) through (5,5) and (1,1)
+	public static boolean addThroughCord(String tL, String bR, String cell) {
+		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
+			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
+				addCordCord("("+i+","+j+")", cell);
+			}
+		}
+		return true;
+	}
+	// add (1,1) through (5,5) and 5
+	public static boolean addThroughNum(String tL, String bR, String num) {
+		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
+			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
+				addCordNum("("+i+","+j+")", num);
+			}
+		}
+		return true;
+	}
 
-	// set (1,1) to (2,2)
-	public static void setCordCord(String y, String x) {
-		cordToCell(y).setData(cordToCell(x).getData());
+	// ---Sub---
+	// sub (1,1) and (2,2) : (1,1) - (2,2)
+	public static boolean subCordCord(String main, String toAdd) {
+		if(isValidNum(cordToCell(main).getData()) && isValidNum(cordToCell(toAdd).getData())) {
+			if(isValidNum(Integer.valueOf(cordToCell(main).getData()) - Integer.valueOf(cordToCell(toAdd).getData()))) {
+				cordToCell(main).setData(Integer.valueOf(cordToCell(main).getData()) - Integer.valueOf(cordToCell(toAdd).getData()) + "");
+				return true;
+			} else {
+				error("Difference is too long to be stored in cell");
+			}
+		} else {
+			error("Can only subtract two numbers");
+		}
+		return false;
 	}
-	// set (1,1) to 5
-	public static void setCordNum(String y, String x) {
-		cordToCell(y).setData(x);
+	// sub (1,1) and 5
+	public static boolean subCordNum(String main, String toAdd) {
+		if(isValidNum(cordToCell(main).getData()) && isValidNum(toAdd)) {
+			if(isValidNum(Integer.valueOf(cordToCell(main).getData()) - Integer.valueOf(toAdd))) {
+				cordToCell(main).setData(Integer.valueOf(cordToCell(main).getData()) - Integer.valueOf(toAdd) + "");
+				return true;
+			} else {
+				error("Difference is too long to be stored in cell");
+			}
+		} else {
+			error("Can only subtract two numbers");
+		}
+		return false;
 	}
-	// set (1,1) to "abcde"
-	public static void setCordString(String y, String s) {
-		cordToCell(y).setData(s);
+	// sub (2,2) through (5,5) and (1,1)
+	public static boolean subThroughCord(String tL, String bR, String cell) {
+		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
+			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
+				subCordCord("("+i+","+j+")", cell);
+			}
+		}
+		return true;
+	}
+	// sub (1,1) through (5,5) and 5
+	public static boolean subThroughNum(String tL, String bR, String num) {
+		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
+			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
+				subCordNum("("+i+","+j+")", num);
+			}
+		}
+		return true;
+	}
+
+	// ---Concat---
+	// concat (1,1) and (2,2)
+	public static boolean concatCordCord(String main, String cellToAdd) {
+		if(cordToCell(main).getData()==null) {
+			setCordCord(main, cellToAdd);
+			return true;
+		}
+		if(cordToCell(main).getData().length() + cordToCell(cellToAdd).getData().length() <=5) {
+			cordToCell(main).setData(cordToCell(main).getData()+cordToCell(cellToAdd).getData());
+			return true;
+		}
+		error("Joint length would exceed cell length limit of 5");
+		return false;
+	}
+	// concat (1,1) and bcd
+	public static boolean concatCordStr(String main, String toAdd) {
+		if(cordToCell(main).getData()==null) {
+			setCordStr(main, toAdd);
+			return true;
+		} else if(cordToCell(main).getData().length() + toAdd.length() <=5) {
+			cordToCell(main).setData(cordToCell(main).getData() + toAdd);
+			return true;
+		}
+		error("Joint length would exceed cell length limit of 5");
+		return false;
+	}
+	// concat (1,1) through (3,3) and (4,4)
+	public static boolean concatThroughCord(String tL, String bR, String cell) {
+		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
+			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
+				concatCordCord("("+i+","+j+")", cell);
+			}
+		}
+		return true;
+	}
+	// concat (1,1) through (3,3) and bcd
+	public static boolean concatThroughStr(String tL, String bR, String s) {
+		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
+			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
+				concatCordStr("("+i+","+j+")", s);
+			}
+		}
+		return true;
+	}
+
+	// ---Clear---
+	// clear (1,1)
+	public static boolean clearCord(String cord) {
+		cordToCell(cord).toDefault();
+		return true;
+	}
+	// clear through
+	public static boolean clearThrough(String tL, String bR) {
+		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
+			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
+				clearCord("("+i+","+j+")");
+			}
+		}
+		return true;
+	}
+
+	// ---General Methods---
+	// tL = Top Left
+	// bR = Bottom Right
+	// tL and bR should be entered as (1,1) in a string, meaing somethign like fc(command[1])
+	public static boolean doesFormBox(String tL, String bR) {
+		return tL.charAt(1)<=bR.charAt(1) && tL.charAt(3)<=bR.charAt(3);
 	}
 
 	// (1,1) -> CELL
 	public static Cell cordToCell(String s) {
-		return cGrid[Integer.valueOf(s.charAt(1)+"")][Integer.valueOf(s.charAt(3)+"")];
+		return cGrid[s.charAt(1)-48][s.charAt(3)-48];
 	}
 
 	// Print out command Line Error
@@ -570,8 +574,8 @@ public class Main {
 						Character.isDigit(cord.charAt(1)) &&
 						Character.isDigit(cord.charAt(3))
 					) {
-						int temp1 = Integer.valueOf(cord.charAt(1)+"");
-						int temp2 = Integer.valueOf(cord.charAt(3)+"");
+						int temp1 = cord.charAt(1)-48;
+						int temp2 = cord.charAt(3)-48;
 						if(1<=temp1 && temp1<=8 && 1<=temp2 && temp2<=8)
 							return true;
 						else {
@@ -588,7 +592,7 @@ public class Main {
 		if(cord.length()==2) {
 			if('a' <= cord.charAt(0) && cord.charAt(1) <= 'h') {
 				if(Character.isDigit(cord.charAt(1))) {
-					int temp = Integer.valueOf(cord.charAt(1)+"");
+					int temp = cord.charAt(1)-48;
 					if(1<=temp && temp <=8)
 						return true;
 				}
@@ -623,6 +627,5 @@ public class Main {
 		}
 		return s;
 	}
-
 
 }

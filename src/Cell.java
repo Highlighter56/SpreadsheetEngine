@@ -1,18 +1,19 @@
 package src;
 
-
-public class Cell implements Comparable<Cell>{
+public class Cell {
 	
+	// ---Attributes---
 	private int[] adress;
 	private String data = "";
 	private boolean isDirty = false;
 
-	// --Constructors--
+	// ---Constructors---
 	// Default
 	public Cell(int x, int y) {
 		setData("");
 		setAdress(x, y);
 	}
+	// Data Provided
 	public Cell(int x, int y, String data) {
 		setData(data);
 		setAdress(x, y);
@@ -49,6 +50,7 @@ public class Cell implements Comparable<Cell>{
 		this.isDirty = false;
 	}
 
+	// marks cell as clean
 	public void clean() {
 		isDirty = false;
 	}
@@ -56,11 +58,6 @@ public class Cell implements Comparable<Cell>{
 	// toDefault
 	public void toDefault() {
 		setData("");
-	}
-
-	// --compareTo--
-	public int compareTo(Cell cell) {
-		return this.data.compareTo(data);
 	}
 	
 	// --toString--

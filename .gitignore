@@ -1,7 +1,4 @@
-# Ingore the TrailPacker example Im basing this off of
-TrailPacker*
-
-# .vscode	: 	Why? Cause other users may not be on vscode, and then this folder is useless
+# .vscode	: 	Other users may not be on vscode, so this should not be commited
 .vscode/
 
 # INCLUDE this file, becuase with it included, the project can be easily run from anywhere
