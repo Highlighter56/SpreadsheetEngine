@@ -397,7 +397,7 @@ public class Main {
 	}
 	// add (2,2) through (5,5) and (1,1)
 	public static boolean addThroughCord(String tL, String bR, String cell) {
-		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {
+		for(int i=tL.charAt(1)-48; i<=bR.charAt(1)-48; i++) {			// Could do chatAt(1) - '0'
 			for(int j=tL.charAt(3)-48; j<=bR.charAt(3)-48; j++) {
 				addCordCord("("+i+","+j+")", cell);
 			}
